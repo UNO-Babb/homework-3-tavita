@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dice Board Game</title>
+    <style>
+        body { font-family: Arial; text-align: center; }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(20, 40px);
+            width: fit-content;
+            margin: auto;
+            gap: 5px;
+        }
+        .cell {
+            width: 40px;
+            height: 40px;
+            border: 1px solid black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+        }
+        .p1 { background-color: lightblue; }
+        .p2 { background-color: lightgreen; }
+        .both { background-color: gold; }
+        .event { border: 2px solid red; }
+    </style>
+
+    <script>
+        async function rollDice() {
+            const response = await fetch("/roll", { method: "POST" });
+            const data = await response.json();
+
+            if (data.winner) {
+                alert(data.winner + " WINS the game!");
+                location.reload();
+                return;
+            }
+
+            document.getElementById("last_roll").innerText = data.last_roll;
+            document.getElementById("current_player").innerText = data.current_player;
+            document.getElementById("event_message").innerText = data.last_event_message;
+
+            updateBoard(data.player_positions, {{ events|safe }});
+            updateScores(data.player_scores);
+        }
+
+        function updateScores(scores) {
+            document.getElementById("score_p1").innerText = scores["Player 1"];
+            document.getElementById("score_p2").innerText = scores["Player 2"];
+        }
+
+        function updateBoard(playerPositions, events) {
+            let cells = document.getElementsByClassName("cell");
+
+            for (let i = 0; i < cells.length; i++) {
+                cells[i].className = "cell";
+                if (events[i]) cells[i].classList.add("event");
+            }
+
+            let p1 = playerPositions["Player 1"];
+            let p2 = playerPositions["Player 2"];
+
+            if (p1 === p2) {
+                cells[p1].classList.add("both");
+            } else {
+                cells[p1].classList.add("p1");
+                cells[p2].classList.add("p2");
+            }
+        }
+    </script>
+</head>
+
+<body>
+
+<h1>Dice Board Game</h1>
+
+<p><strong>Current Player:</strong> <span id="current_player">{{ current_player }}</span></p>
+<p><strong>Last Dice Roll:</strong> <span id="last_roll">{{ last_roll }}</span></p>
+
+<h3>Scores</h3>
+<p>Player 1: <span id="score_p1">{{ player_scores["Player 1"] }}</span></p>
+<p>Player 2: <span id="score_p2">{{ player_scores["Player 2"] }}</span></p>
+
+<p><strong>Event:</strong> <span id="event_message">{{ last_event_message }}</span></p>
+
+<div class="board">
+    {% for i in range(board_size) %}
+        {% set p1 = player_positions["Player 1"] %}
+        {% set p2 = player_positions["Player 2"] %}
+        {% set has_event = events.get(i) %}
+
+        <div class="cell
+            {% if has_event %} event {% endif %}
+            {% if p1 == i and p2 == i %} both
+            {% elif p1 == i %} p1
+            {% elif p2 == i %} p2
+            {% endif %}
+        ">
+            {{ i }}
+        </div>
+    {% endfor %}
+</div>
+
+<br>
+<button onclick="rollDice()">Roll Dice</button>
+
+</body>
+</html>
