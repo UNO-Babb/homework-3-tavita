@@ -1,7 +1,7 @@
 #Example Flask App for a hexaganal tile game
 #Logic is in this python file
 
-from flask import Flask, render_template, jsonify
+
 from flask import Flask, render_template, request, jsonify
 import random
 import json
