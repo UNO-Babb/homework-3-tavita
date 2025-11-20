@@ -1,0 +1,4 @@
+3: Hotel
+10: Troll
+15: Hotel
+18: Troll

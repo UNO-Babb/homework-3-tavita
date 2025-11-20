@@ -1,60 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hexagon Tile Game</title>
+    <title>Dice Quest</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f0f0f0;
+        }
+
+        .board {
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            margin-top: 30px;
         }
-        #board {
-            display: grid;
-            grid-template-columns: repeat(10, 60px);
-            grid-template-rows: repeat(10, 52px);
-            gap: 2px;
-        }
-        .hex {
+
+        .tile {
             width: 60px;
-            height: 52px;
-            background-color: lightgray;
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            transition: background-color 0.2s;
+            height: 60px;
+            border: 1px solid black;
+            background: white;
+            margin: 3px;
+            position: relative;
+        }
+
+        .p1 {
+            background: red;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+        }
+
+        .p2 {
+            background: blue;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+        }
+
+        .event-box {
+            margin-top: 20px;
+            padding: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
-<div id="board">
-    <!-- Hexagonal tiles will be added here on clicks -->
+<h1>Dice Quest</h1>
+
+<h3>Turn: Player {{ turn + 1 }}</h3>
+
+<div class="board">
+    {% for space in range(1, board_size+1) %}
+    <div class="tile">
+        <div>{{ space }}</div>
+
+        {% if positions[0] == space %}
+        <div class="p1"></div>
+        {% endif %}
+
+        {% if positions[1] == space %}
+        <div class="p2"></div>
+        {% endif %}
+    </div>
+    {% endfor %}
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function() {
-        // Create an empty board of hex tiles
-        for (let i = 0; i < 100; i++) {
-            const hexTile = $('<div class="hex"></div>');
-            hexTile.data("clicked", false);  // Track if a tile has been clicked
-            $('#board').append(hexTile);
-        }
+<h3>Dice Result: {{ dice }}</h3>
 
-        // Add color to hex tiles on click
-        $('#board').on('click', '.hex', function() {
-            if (!$(this).data("clicked")) {  // Only allow one click per tile
-                $.getJSON('/add_tile', function(data) {
-                    $(this).css('background-color', data.color);
-                    $(this).data("clicked", true);  // Mark as clicked
-                }.bind(this));
-            }
-        });
+<h3>Scores</h3>
+Player 1: {{ scores[0] }}<br>
+Player 2: {{ scores[1] }}
+
+<br><br>
+
+<button onclick="rollDice()">Roll Dice</button>
+
+<div class="event-box" id="event-log"></div>
+
+<script>
+function rollDice() {
+    fetch("/roll", { method: "POST" })
+    .then(response => response.json())
+    .then(data => {
+        location.reload();  // refresh page to update board
     });
+}
 </script>
 
 </body>
